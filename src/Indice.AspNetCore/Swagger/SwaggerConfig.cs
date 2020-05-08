@@ -104,7 +104,7 @@ namespace Indice.AspNetCore.Swagger
                                                                              .Where(x => x != null && typeof(PolymorphicJsonConverter).IsAssignableFrom(x.ConverterType));
             foreach (var item in attribute) {
                 var baseType = item.ConverterType.GenericTypeArguments[0];
-                var discriminator = item.ConverterParameters.FirstOrDefault() as string;
+                var discriminator = item.ConverterParameters?.FirstOrDefault() as string;
                 var mapping = PolymorphicJsonConverter.GetTypeMapping(baseType, discriminator);
                 options.SchemaFilter<PolymorphicSchemaFilter>(baseType, discriminator, mapping);
                 options.OperationFilter<PolymorphicOperationFilter>(new PolymorphicSchemaFilter(baseType, discriminator, mapping));
