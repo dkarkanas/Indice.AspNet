@@ -12,5 +12,9 @@ namespace Indice.AspNetCore.Identity.Features
         /// </summary>
         [Required(AllowEmptyStrings = false)]
         public string PhoneNumber { get; set; }
+        /// <summary>
+        /// Preferred delivery channel.
+        /// </summary>
+        public string DeliveryChannel { get; set; } = "Sms";
     }
 }
