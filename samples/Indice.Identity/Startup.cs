@@ -103,7 +103,8 @@ namespace Indice.Identity
             .AddJob<SMSAlertHandler>()
             .WithQueueTrigger<SMSDto>(options => {
                 options.QueueName = "user-messages";
-                options.PollingInterval = 500;
+                options.PollingInterval = 300;
+                options.InstanceCount = 32;
             })
             .AddJob<LoadAvailableAlertsHandler>()
             .WithScheduleTrigger<DemoCounterModel>("0/5 * * * * ?", options => {

@@ -7,7 +7,7 @@ using Quartz;
 namespace Indice.Hosting.Tasks
 {
     [PersistJobDataAfterExecution]
-    [DisallowConcurrentExecution]
+    //[DisallowConcurrentExecution]
     internal class ScheduledJob<TTaskHandler, TState> : IJob where TTaskHandler : class where TState : class, new()
     {
         private readonly TaskHandlerActivator _taskHandlerActivator;

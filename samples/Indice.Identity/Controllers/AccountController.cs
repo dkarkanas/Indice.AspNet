@@ -11,6 +11,7 @@ using Indice.AspNetCore.Filters;
 using Indice.AspNetCore.Identity;
 using Indice.AspNetCore.Identity.Extensions;
 using Indice.AspNetCore.Identity.Models;
+using Indice.Identity.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,12 +26,12 @@ namespace Indice.Identity.Controllers
     [SecurityHeaders]
     public class AccountController : Controller
     {
-        private readonly IIdentityServerInteractionService _interaction;
-        private readonly IEventService _events;
-        private readonly IClientStore _clientStore;
-        private readonly ExtendedUserManager<User> _userManager;
-        private readonly ExtendedSignInManager<User> _signInManager;
         private readonly AccountService _accountService;
+        private readonly ExtendedSignInManager<User> _signInManager;
+        private readonly ExtendedUserManager<User> _userManager;
+        private readonly IClientStore _clientStore;
+        private readonly IEventService _events;
+        private readonly IIdentityServerInteractionService _interaction;
         private readonly ILogger<AccountController> _logger;
         /// <summary>
         /// The name of the controller.
@@ -48,15 +49,23 @@ namespace Indice.Identity.Controllers
         /// <param name="schemeProvider">Responsible for managing what authenticationSchemes are supported.</param>
         /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
         /// <param name="logger">Represents a type used to perform logging.</param>
-        public AccountController(IIdentityServerInteractionService interaction, IEventService events, IClientStore clientStore, ExtendedUserManager<User> userManager, ExtendedSignInManager<User> signInManager, IAuthenticationSchemeProvider schemeProvider,
-            IHttpContextAccessor httpContextAccessor, ILogger<AccountController> logger) {
-            _interaction = interaction ?? throw new ArgumentNullException(nameof(interaction));
-            _events = events ?? throw new ArgumentNullException(nameof(events));
-            _clientStore = clientStore ?? throw new ArgumentNullException(nameof(clientStore));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
+        public AccountController(
+            ExtendedSignInManager<User> signInManager,
+            ExtendedUserManager<User> userManager,
+            IAuthenticationSchemeProvider schemeProvider,
+            IClientStore clientStore,
+            IEventService events,
+            IHttpContextAccessor httpContextAccessor,
+            IIdentityServerInteractionService interaction,
+            ILogger<AccountController> logger
+        ) {
             _accountService = new AccountService(interaction, httpContextAccessor, schemeProvider, clientStore);
+            _clientStore = clientStore ?? throw new ArgumentNullException(nameof(clientStore));
+            _events = events ?? throw new ArgumentNullException(nameof(events));
+            _interaction = interaction ?? throw new ArgumentNullException(nameof(interaction));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public string UserId => User.FindFirstValue(JwtClaimTypes.Subject);
@@ -67,7 +76,7 @@ namespace Indice.Identity.Controllers
         /// </summary>
         /// <param name="returnUrl">The URL to navigate after a successful login.</param>
         [HttpGet("login")]
-        public async Task<IActionResult> Login(string returnUrl) {
+        public async Task<IActionResult> Login([FromQuery] string returnUrl) {
             // Build a model so we know what to show on the login page.
             var viewModel = await _accountService.BuildLoginViewModelAsync(returnUrl);
             if (viewModel.IsExternalLoginOnly) {
@@ -77,9 +86,6 @@ namespace Indice.Identity.Controllers
                     returnUrl
                 });
             }
-#if DEBUG
-            viewModel.UserName = "company@indice.gr";
-#endif
             return View(viewModel);
         }
 
@@ -90,7 +96,7 @@ namespace Indice.Identity.Controllers
         /// <param name="button">The name of the button pressed by the user.</param>
         [HttpPost("login")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginInputModel model, string button) {
+        public async Task<IActionResult> Login([FromForm] LoginInputModel model, [FromForm] string button) {
             // Check if we are in the context of an authorization request.
             var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
             // The user clicked the 'cancel' button.
@@ -153,11 +159,22 @@ namespace Indice.Identity.Controllers
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet("register")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Register([FromForm] FidoRegisterRequest request) {
+            return View();
+        }
+
+        /// <summary>
         /// Renders the logout page.
         /// </summary>
         /// <param name="logoutId">The logout id.</param>
         [HttpGet("logout")]
-        public async Task<IActionResult> Logout(string logoutId) {
+        public async Task<IActionResult> Logout([FromQuery] string logoutId) {
             // Build a model so the logout page knows what to display.
             var viewModel = await _accountService.BuildLogoutViewModelAsync(logoutId);
             if (!viewModel.ShowLogoutPrompt) {
@@ -173,7 +190,7 @@ namespace Indice.Identity.Controllers
         /// <param name="model">The model that contains user's logout info.</param>
         [HttpPost("logout")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout(LogoutInputModel model) {
+        public async Task<IActionResult> Logout([FromForm] LogoutInputModel model) {
             // Build a model so the logged out page knows what to display.
             var viewModel = await _accountService.BuildLoggedOutViewModelAsync(model.LogoutId);
             viewModel.AutomaticRedirectAfterSignOut = true;

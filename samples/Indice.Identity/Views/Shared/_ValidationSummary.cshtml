@@ -1,7 +1,3 @@
-﻿@if (ViewContext.ModelState.IsValid == false)
-{
-    <div class="alert alert-danger">
-        <strong>Error</strong>
-        <div asp-validation-summary="All" class="danger"></div>
-    </div>
-}
+﻿<div class="alert alert-danger" indice-if="!ViewContext.ModelState.IsValid">
+    <div asp-validation-summary="All" class="danger"></div>
+</div>

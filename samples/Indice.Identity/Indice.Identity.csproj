@@ -7,6 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="bundleconfig.json" />
+    <Content Remove="compilerconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="compilerconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <!--<PackageReference Include="Indice.AspNetCore.Identity" Version="3.1.23" />-->
@@ -38,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="bundleconfig.json" />
+    <None Include="compilerconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
