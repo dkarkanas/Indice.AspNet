@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Indice.Hosting.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -64,7 +63,7 @@ namespace Indice.Hosting
                                                    .ForJob(dequeueJob)
                                                    .WithIdentity(name: $"{dequeueJobSchedule.Name}{TriggerNames.DequeueJobTrigger}{i}", group: JobGroups.InternalJobsGroup)
                                                    .StartNow()
-                                                   .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromMilliseconds(dequeueJobSchedule.PollingInterval + 100 * i)).RepeatForever())
+                                                   .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromMilliseconds(dequeueJobSchedule.PollingInterval + (dequeueJobSchedule.PollingInterval / dequeueJobSchedule.InstanceCount * (i - 1)))).RepeatForever())
                                                    .Build();
                     await Scheduler.ScheduleJob(jobTrigger);
                 }

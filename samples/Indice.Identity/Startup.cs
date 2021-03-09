@@ -80,7 +80,6 @@ namespace Indice.Identity
             });
             services.AddResponseCaching();
             services.AddDataProtectionLocal(options => options.FromConfiguration());
-            //services.AddEmailService(Configuration);
             services.AddEmailServiceSparkpost(Configuration);
             /*services.AddSmsServiceApifon(Configuration, options => {
                 options.ConfigurePrimaryHttpMessageHandler = (serviceProvider) => new System.Net.Http.HttpClientHandler {
@@ -98,13 +97,14 @@ namespace Indice.Identity
             // Setup worker host for executing background tasks.
             services.AddWorkerHost(options => {
                 options.JsonOptions.JsonSerializerOptions.WriteIndented = true;
-                options.UseEntityFrameworkStorage<ExtendedTaskDbContext>();
+                options.UseSqlServerStorage();
+                //options.UseEntityFrameworkStorage<ExtendedTaskDbContext>();
             })
-            .AddJob<SMSAlertHandler>()
-            .WithQueueTrigger<SMSDto>(options => {
+            .AddJob<SmsAlertHandler>()
+            .WithQueueTrigger<SmsDto>(options => {
                 options.QueueName = "user-messages";
-                options.PollingInterval = 300;
-                options.InstanceCount = 32;
+                options.PollingInterval = 1000;
+                options.InstanceCount = 1;
             })
             .AddJob<LoadAvailableAlertsHandler>()
             .WithScheduleTrigger<DemoCounterModel>("0/5 * * * * ?", options => {
@@ -118,8 +118,7 @@ namespace Indice.Identity
         /// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         /// </summary>
         /// <param name="app">Defines a class that provides the mechanisms to configure an application's request pipeline.</param>
-        /// <param name="serviceProvider"></param>
-        public void Configure(IApplicationBuilder app, IServiceProvider serviceProvider) {
+        public void Configure(IApplicationBuilder app) {
             if (HostingEnvironment.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
                 app.IdentityServerStoreSetup<ExtendedConfigurationDbContext>(Clients.Get(), Resources.GetIdentityResources(), Resources.GetApis(), Resources.GetApiScopes());
@@ -196,6 +195,7 @@ namespace Indice.Identity
                 options.Host = Settings.Host;
                 options.Enabled = true;
                 options.OnPrepareResponse = staticFileOptions.OnPrepareResponse;
+                options.InjectStylesheet("/css/admin-ui-overrides.css");
             });
             app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();

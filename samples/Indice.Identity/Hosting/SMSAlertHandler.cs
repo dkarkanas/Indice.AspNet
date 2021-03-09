@@ -1,27 +1,27 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using Indice.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Indice.Identity.Hosting
 {
-    public class SMSAlertHandler
+    public class SmsAlertHandler
     {
-        private readonly ILogger<SMSAlertHandler> _logger;
+        private readonly ILogger<SmsAlertHandler> _logger;
 
-        public SMSAlertHandler(ILogger<SMSAlertHandler> logger) {
+        public SmsAlertHandler(ILogger<SmsAlertHandler> logger) {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task Process(SMSDto userMessage) {
-            if (userMessage == null) {
+        public async Task Process(SmsDto message) {
+            if (message == null) {
                 return;
             }
-            _logger.LogInformation("Start: {Id} at {Timestamp} with message {message}", userMessage.Id, DateTime.UtcNow, userMessage.Message);
-            var waitTime = new Random().Next(5, 10) * 1000;
-            _logger.LogInformation("Durat: {Id} Process will last {0}ms", userMessage.Id, waitTime);
+            var timer = new Stopwatch();
+            timer.Start();
+            var waitTime = new Random().Next(5, 10) * 100;
             await Task.Delay(waitTime);
-            _logger.LogInformation("Ended: {Id} at {Timestamp} ", userMessage.Id, DateTime.UtcNow);
+            _logger.LogDebug($"{nameof(SmsAlertHandler)} took {timer.ElapsedMilliseconds}ms to execute.");
         }
     }
 }
