@@ -163,9 +163,9 @@ namespace Indice.Identity.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpGet("register")]
+        [HttpPost("fido/register/init")]
         [ValidateAntiForgeryToken]
-        public IActionResult Register([FromForm] FidoRegisterRequest request) {
+        public IActionResult InitRegistration([FromForm] FidoRegisterRequest request) {
             return View();
         }
 

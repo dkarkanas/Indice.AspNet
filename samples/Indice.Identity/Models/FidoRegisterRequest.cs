@@ -3,6 +3,6 @@
     public class FidoRegisterRequest
     {
         public string UserId { get; set; }
-        public string DeviceName { get; set; }
+        public string DeviceFriendlyName { get; set; }
     }
 }
