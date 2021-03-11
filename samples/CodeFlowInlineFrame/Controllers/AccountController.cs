@@ -46,8 +46,8 @@ namespace CodeFlowInlineFrame.Controllers
                 codeChallenge = Base64Url.Encode(challengeBytes);
             }
             var authorizeUrl = requestUrl.CreateAuthorizeUrl(
-                clientId: _clientSettings.Id,
-                responseType: OidcConstants.ResponseTypes.CodeIdToken,
+                _clientSettings.Id,
+                OidcConstants.ResponseTypes.CodeIdToken,
                 codeChallengeMethod: OidcConstants.CodeChallengeMethods.Sha256,
                 codeChallenge: codeChallenge,
                 responseMode: OidcConstants.ResponseModes.FormPost,

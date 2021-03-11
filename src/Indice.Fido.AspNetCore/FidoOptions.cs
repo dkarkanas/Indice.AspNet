@@ -2,10 +2,13 @@
 
 namespace Indice.AspNetCore.Fido
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FidoOptions
     {
         internal IServiceCollection Services;
         public string RelyingPartyId { get; set; }
-        public string RelyingPartyName { get; set; } = Constants.DefaultRelyingPartyName;
+        public string RelyingPartyName { get; set; } = RelyingPartyEntity.DEFAULT_NAME;
     }
 }

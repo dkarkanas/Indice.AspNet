@@ -3,13 +3,13 @@
 <h2>Please use your authenticator</h2>
 <script type="text/javascript">
     // Challenge
-    let challengeBytesAsString = atob('@Html.Raw(Model.Base64Challenge)');
+    let challengeBytesAsString = atob('@Html.Raw(Model.ChallengeBase64)');
     let challenge = new Uint8Array(challengeBytesAsString.length);
     for (let i = 0; i < challengeBytesAsString.length; i++) {
         challenge[i] = challengeBytesAsString.charCodeAt(i);
     }
     // Supported algorithms, ordered by preference.
-    var pubKeyCredParams = [{
+    const pubKeyCredParams = [{
         type: 'public-key',
         alg: -8
     }, {
@@ -52,7 +52,7 @@
         name: '@Model.RelyingParty.Name'
     };
     // User handle.
-    let userHandleBytesAsString = atob('@Html.Raw(Model.Base64UserHandle)');
+    let userHandleBytesAsString = atob('@Html.Raw(Model.UserHandleBase64)');
     let userHandle = new Uint8Array(userHandleBytesAsString.length);
     for (let i = 0; i < userHandleBytesAsString.length; i++) {
         userHandle[i] = userHandleBytesAsString.charCodeAt(i);

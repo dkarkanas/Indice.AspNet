@@ -174,7 +174,7 @@ namespace Indice.Identity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> InitRegistration([FromForm] FidoRegisterViewModel request) {
             var challenge = await _fidoAuthenticationService.InitiateRegistration(request.UserId, request.DeviceFriendlyName);
-            return View();
+            return View(challenge);
         }
 
         /// <summary>

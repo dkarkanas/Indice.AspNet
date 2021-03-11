@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Indice.AspNetCore.Fido
 {
+    /// <inheritdoc />
     public class RelyingPartyResolver : IRelyingPartyResolver
     {
         private readonly FidoOptions _fidoOptions;
@@ -18,17 +19,19 @@ namespace Indice.AspNetCore.Fido
 
         public RelyingPartyEntity Resolve() {
             string relyingPartyId;
+            var relyingPartyName = _fidoOptions.RelyingPartyName;
             if (!string.IsNullOrWhiteSpace(_fidoOptions.RelyingPartyId)) {
                 relyingPartyId = new Uri(_fidoOptions.RelyingPartyId).Host;
             } else {
                 var host = _httpContextAccessor.HttpContext.Request.Host;
                 relyingPartyId = host.Host;
             }
-            if (string.IsNullOrWhiteSpace(_fidoOptions.RelyingPartyName)) {
+            if (string.IsNullOrWhiteSpace(relyingPartyName)) {
+                relyingPartyName = RelyingPartyEntity.DEFAULT_NAME;
             }
             return new RelyingPartyEntity {
                 Id = relyingPartyId,
-                Name = string.Empty
+                Name = relyingPartyName
             };
         }
     }

@@ -253,12 +253,6 @@ namespace Indice.AspNetCore.Swagger
                         RefreshUrl = new Uri(settings?.Authority + "/connect/token"),
                         AuthorizationUrl = new Uri(settings?.Authority + "/connect/authorize"),
                         Scopes = GetScopes(settings)
-                    },
-                    ClientCredentials = new OpenApiOAuthFlow {
-                        TokenUrl = new Uri(settings?.Authority + "/connect/token"),
-                        RefreshUrl = new Uri(settings?.Authority + "/connect/token"),
-                        AuthorizationUrl = new Uri(settings?.Authority + "/connect/authorize"),
-                        Scopes = GetScopes(settings)
                     }
                 }
             });
@@ -279,12 +273,6 @@ namespace Indice.AspNetCore.Swagger
                 Description = "Identity Server OAuth2 - Implicit Flow",
                 Flows = new OpenApiOAuthFlows {
                     Implicit = new OpenApiOAuthFlow {
-                        TokenUrl = new Uri(settings?.Authority + "/connect/token"),
-                        RefreshUrl = new Uri(settings?.Authority + "/connect/token"),
-                        AuthorizationUrl = new Uri(settings?.Authority + "/connect/authorize"),
-                        Scopes = GetScopes(settings)
-                    },
-                    ClientCredentials = new OpenApiOAuthFlow {
                         TokenUrl = new Uri(settings?.Authority + "/connect/token"),
                         RefreshUrl = new Uri(settings?.Authority + "/connect/token"),
                         AuthorizationUrl = new Uri(settings?.Authority + "/connect/authorize"),
