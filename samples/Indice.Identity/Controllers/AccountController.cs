@@ -7,6 +7,7 @@ using IdentityServer4.Extensions;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
+using Indice.AspNetCore.Fido;
 using Indice.AspNetCore.Filters;
 using Indice.AspNetCore.Identity;
 using Indice.AspNetCore.Identity.Extensions;
@@ -33,6 +34,7 @@ namespace Indice.Identity.Controllers
         private readonly IEventService _events;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly ILogger<AccountController> _logger;
+        private readonly IFidoAuthenticationService _fidoAuthenticationService;
         /// <summary>
         /// The name of the controller.
         /// </summary>
@@ -41,13 +43,14 @@ namespace Indice.Identity.Controllers
         /// <summary>
         /// Creates a new instance of <see cref="AccountController"/>.
         /// </summary>
-        /// <param name="interaction">Provide services be used by the user interface to communicate with IdentityServer.</param>
-        /// <param name="events">Interface for the event service.</param>
-        /// <param name="clientStore">Retrieval of client configuration.</param>
-        /// <param name="userManager">Provides the APIs for managing user in a persistence store.</param>
         /// <param name="signInManager">Provides the APIs for user sign in.</param>
+        /// <param name="userManager">Provides the APIs for managing user in a persistence store.</param>
         /// <param name="schemeProvider">Responsible for managing what authenticationSchemes are supported.</param>
+        /// <param name="clientStore">Retrieval of client configuration.</param>
+        /// <param name="events">Interface for the event service.</param>
+        /// <param name="fidoAuthenticationService">A service that contains WebAuthn Relying Party operations, regarding registration or authentication ceremony.</param>
         /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
+        /// <param name="interaction">Provide services be used by the user interface to communicate with IdentityServer.</param>
         /// <param name="logger">Represents a type used to perform logging.</param>
         public AccountController(
             ExtendedSignInManager<User> signInManager,
@@ -55,6 +58,7 @@ namespace Indice.Identity.Controllers
             IAuthenticationSchemeProvider schemeProvider,
             IClientStore clientStore,
             IEventService events,
+            IFidoAuthenticationService fidoAuthenticationService,
             IHttpContextAccessor httpContextAccessor,
             IIdentityServerInteractionService interaction,
             ILogger<AccountController> logger
@@ -62,6 +66,7 @@ namespace Indice.Identity.Controllers
             _accountService = new AccountService(interaction, httpContextAccessor, schemeProvider, clientStore);
             _clientStore = clientStore ?? throw new ArgumentNullException(nameof(clientStore));
             _events = events ?? throw new ArgumentNullException(nameof(events));
+            _fidoAuthenticationService = fidoAuthenticationService ?? throw new ArgumentNullException(nameof(fidoAuthenticationService));
             _interaction = interaction ?? throw new ArgumentNullException(nameof(interaction));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
@@ -158,14 +163,17 @@ namespace Indice.Identity.Controllers
             return View(viewModel);
         }
 
+        [HttpGet("fido/register")]
+        public IActionResult StartRegistration() => View();
+
         /// <summary>
-        /// 
+        /// Initiates the process for registering a user using Fido2.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">The request input model.</param>
         [HttpPost("fido/register/init")]
         [ValidateAntiForgeryToken]
-        public IActionResult InitRegistration([FromForm] FidoRegisterRequest request) {
+        public async Task<IActionResult> InitRegistration([FromForm] FidoRegisterViewModel request) {
+            var challenge = await _fidoAuthenticationService.InitiateRegistration(request.UserId, request.DeviceFriendlyName);
             return View();
         }
 

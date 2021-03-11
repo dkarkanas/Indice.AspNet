@@ -94,6 +94,8 @@ namespace Indice.Identity
                        .AddConnectSrc("https://dc.services.visualstudio.com")
                        .AddFrameAncestors("https://localhost:2002");
             });
+            // Setup Fido services.
+            services.AddFido();
             // Setup worker host for executing background tasks.
             services.AddWorkerHost(options => {
                 options.JsonOptions.JsonSerializerOptions.WriteIndented = true;

@@ -4,27 +4,28 @@ using IdentityModel;
 
 namespace Indice.AspNetCore.Fido
 {
+    /// <summary>A service that contains WebAuthn Relying Party operations, regarding registration or authentication ceremony.</summary>
     public class FidoAuthenticationService : IFidoAuthenticationService
     {
-        private readonly IRelyingPartyIdResolver _relyingPartyIdResolver;
+        private readonly IRelyingPartyResolver _relyingPartyInfoResolver;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="relyingPartyIdResolver"></param>
-        public FidoAuthenticationService(IRelyingPartyIdResolver relyingPartyIdResolver) {
-            _relyingPartyIdResolver = relyingPartyIdResolver ?? throw new ArgumentNullException(nameof(relyingPartyIdResolver));
+        /// <summary>Creates a new instance of <see cref="FidoAuthenticationService"/>.</summary>
+        /// <param name="relyingPartyInfoResolver">A service that helps discover information about the Relying Party (e.x. Identity Server).</param>
+        public FidoAuthenticationService(IRelyingPartyResolver relyingPartyInfoResolver) {
+            _relyingPartyInfoResolver = relyingPartyInfoResolver ?? throw new ArgumentNullException(nameof(relyingPartyInfoResolver));
         }
 
         /// <inheritdoc />
-        public Task<InitiateRegistrationChallenge> InitiateRegistration(string userId, string deviceFriendlyName = null) {
+        public Task<PublicKeyCredentialCreationOptions> InitiateRegistration(string userId, string deviceFriendlyName = null) {
             if (string.IsNullOrWhiteSpace(userId)) {
-                throw new ArgumentNullException(nameof(userId), $"Paramater {nameof(userId)} cannot be null or empty during registration initiation process.");
+                throw new ArgumentNullException(nameof(userId), $"Parameter {nameof(userId)} cannot be null or empty during registration initiation process.");
             }
             /* https://www.w3.org/TR/webauthn/#sctn-cryptographic-challenges */
-            var challenge = CryptoRandom.CreateRandomKey(64);
-            var relyingPartyId = _relyingPartyIdResolver.Resolve();
-            return null;
+            var challenge = CryptoRandom.CreateRandomKey(32);
+            var relyingParty = _relyingPartyInfoResolver.Resolve();
+            return Task.FromResult(new PublicKeyCredentialCreationOptions {
+                RelyingParty = relyingParty
+            });
         }
     }
 }

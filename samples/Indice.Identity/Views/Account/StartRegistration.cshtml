@@ -1,0 +1,27 @@
+@model FidoRegisterViewModel
+
+<div class="login-page">
+    <partial name="_ValidationSummary" />
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Fido Registration</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="@AccountController.Name" asp-action="@nameof(AccountController.InitRegistration)">
+                        <div class="form-group">
+                            <label asp-for="UserId"></label>
+                            <input type="text" class="form-control" placeholder="Username" asp-for="UserId" autofocus />
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="DeviceFriendlyName"></label>
+                            <input type="text" class="form-control" placeholder="Device Friendly Name" asp-for="DeviceFriendlyName" />
+                        </div>
+                        <button type="submit" class="btn btn-primary" name="button">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

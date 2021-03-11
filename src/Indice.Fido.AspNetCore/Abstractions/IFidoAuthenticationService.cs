@@ -15,6 +15,6 @@ namespace Indice.AspNetCore.Fido
         /// <param name="userId">The user's identifier.</param>
         /// <param name="deviceFriendlyName">A friendly name for the authenticator to register.</param>
         /// <returns>A cryptographic challenge value.</returns>
-        Task<InitiateRegistrationChallenge> InitiateRegistration(string userId, string deviceFriendlyName = null);
+        Task<PublicKeyCredentialCreationOptions> InitiateRegistration(string userId, string deviceFriendlyName = null);
     }
 }
