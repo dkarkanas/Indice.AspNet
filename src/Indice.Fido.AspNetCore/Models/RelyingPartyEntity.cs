@@ -1,6 +1,6 @@
 ﻿/* https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity */
 
-namespace Indice.AspNetCore.Fido
+namespace Indice.AspNetCore.Fido.Models
 {
     /// <summary>
     /// Contains data about the Relying Party responsible for the request.
@@ -10,9 +10,9 @@ namespace Indice.AspNetCore.Fido
         /// <summary>
         /// Default Relying Party name.
         /// </summary>
-        public const string DEFAULT_NAME = "Indice Fido2 Server";
+        public const string DEFAULT_NAME = "Indice FIDO2 Server";
         /// <summary>
-        /// Relying Party specifies the value the credential should be scoped to.
+        /// Specifies the value the credential should be scoped to.
         /// </summary>
         public string Id { get; set; }
         /// <summary>

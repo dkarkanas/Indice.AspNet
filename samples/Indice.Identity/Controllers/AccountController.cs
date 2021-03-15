@@ -8,7 +8,7 @@ using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using Indice.AspNetCore.Fido;
-using Indice.AspNetCore.Filters;
+using Indice.AspNetCore.Fido.Models;
 using Indice.AspNetCore.Identity;
 using Indice.AspNetCore.Identity.Extensions;
 using Indice.AspNetCore.Identity.Models;
@@ -24,7 +24,7 @@ namespace Indice.Identity.Controllers
     /// Contains all methods related to a user's account.
     /// </summary>
     [ApiExplorerSettings(IgnoreApi = true)]
-    [SecurityHeaders]
+    //[SecurityHeaders]
     public class AccountController : Controller
     {
         private readonly AccountService _accountService;
@@ -167,14 +167,26 @@ namespace Indice.Identity.Controllers
         public IActionResult StartRegistration() => View();
 
         /// <summary>
-        /// Initiates the process for registering a user using Fido2.
+        /// Initiates the process for registering a user using FIDO2.
         /// </summary>
         /// <param name="request">The request input model.</param>
         [HttpPost("fido/register/init")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> InitRegistration([FromForm] FidoRegisterViewModel request) {
+        public async Task<IActionResult> InitRegistration([FromForm] FidoRegisterModel request) {
             var challenge = await _fidoAuthenticationService.InitiateRegistration(request.UserId, request.DeviceFriendlyName);
             return View(challenge);
+        }
+
+        /// <summary>
+        /// Completes the process for registering a user using FIDO2.
+        /// </summary>
+        [HttpPost("fido/register/complete")]
+        public async Task<IActionResult> CompleteRegistration([FromBody] PublicKeyCredentialsBase64 request) {
+            var result = await _fidoAuthenticationService.CompleteRegistration(request.ToPublicKeyCredential());
+            if (!result.Succeeded) {
+                return BadRequest();
+            }
+            return Ok();
         }
 
         /// <summary>

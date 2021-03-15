@@ -11,11 +11,11 @@ using Indice.Configuration;
 using Indice.Identity.Configuration;
 using Indice.Identity.Hosting;
 using Indice.Identity.Security;
-using Indice.Identity.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -94,13 +94,16 @@ namespace Indice.Identity
                        .AddConnectSrc("https://dc.services.visualstudio.com")
                        .AddFrameAncestors("https://localhost:2002");
             });
-            // Setup Fido services.
-            services.AddFido();
+            // Setup FIDO2.
+            services.AddFido(options => {
+                options.RelyingPartyId = "www.indice.gr";
+                options.RelyingPartyName = "Indice FIDO2 Server";
+            })
+            /*.UseEntityFrameworkCorePublicKeyCredentialsStore(builder => builder.UseSqlServer(Configuration.GetConnectionString("FidoDb")))*/;
             // Setup worker host for executing background tasks.
             services.AddWorkerHost(options => {
                 options.JsonOptions.JsonSerializerOptions.WriteIndented = true;
                 options.UseSqlServerStorage();
-                //options.UseEntityFrameworkStorage<ExtendedTaskDbContext>();
             })
             .AddJob<SmsAlertHandler>()
             .WithQueueTrigger<SmsDto>(options => {
@@ -182,7 +185,6 @@ namespace Indice.Identity
                     options.SwaggerEndpoint($"/swagger/{IdentityServerApi.Scope}/swagger.json", IdentityServerApi.Scope);
                     options.OAuth2RedirectUrl($"{Settings.Host}/docs/oauth2-redirect.html");
                     options.OAuthClientId("swagger-ui");
-                    options.OAuthClientSecret("M2YwNTlkMTgtYWQzNy00MGNjLWFiYjQtZWQ3Y2Y4N2M3YWU3");
                     options.OAuthAppName("Swagger UI");
                     options.DocExpansion(DocExpansion.None);
                     options.OAuthUsePkce();

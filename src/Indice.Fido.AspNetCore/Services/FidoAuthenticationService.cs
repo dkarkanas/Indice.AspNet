@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IdentityModel;
+using Indice.AspNetCore.Fido.Models;
+using Indice.AspNetCore.Fido.Stores;
 
 namespace Indice.AspNetCore.Fido
 {
@@ -9,26 +11,53 @@ namespace Indice.AspNetCore.Fido
     /// </summary>
     public class FidoAuthenticationService : IFidoAuthenticationService
     {
+        private readonly IPublicKeyCredentialsStore _publicKeyCredentialsStore;
+        private readonly IRegistrationChallengeStore _registrationChallengeStore;
         private readonly IRelyingPartyResolver _relyingPartyInfoResolver;
 
         /// <summary>
         /// Creates a new instance of <see cref="FidoAuthenticationService"/>.
         /// </summary>
-        /// <param name="relyingPartyInfoResolver">A service that helps discover information about the Relying Party (e.x. Identity Server).</param>
-        public FidoAuthenticationService(IRelyingPartyResolver relyingPartyInfoResolver) {
+        /// <param name="publicKeyCredentialsStore">An abstraction for the store that manages the public key credentials used in FIDO2.</param>
+        /// <param name="registrationChallengeStore">Abstracts the way of persisting the generated challenge during registration initiation.</param>
+        /// <param name="relyingPartyInfoResolver">A service that helps discover information about the Relying Party.</param>
+        public FidoAuthenticationService(
+            IPublicKeyCredentialsStore publicKeyCredentialsStore,
+            IRegistrationChallengeStore registrationChallengeStore,
+            IRelyingPartyResolver relyingPartyInfoResolver
+        ) {
+            _publicKeyCredentialsStore = publicKeyCredentialsStore ?? throw new ArgumentNullException(nameof(publicKeyCredentialsStore));
+            _registrationChallengeStore = registrationChallengeStore ?? throw new ArgumentNullException(nameof(registrationChallengeStore));
             _relyingPartyInfoResolver = relyingPartyInfoResolver ?? throw new ArgumentNullException(nameof(relyingPartyInfoResolver));
         }
 
         /// <inheritdoc />
-        public Task<PublicKeyCredentialCreationOptions> InitiateRegistration(string userId, string deviceFriendlyName = null) {
+        public async Task<PublicKeyCredentialCreationOptionsBase64> InitiateRegistration(string userId, string deviceFriendlyName = null) {
             if (string.IsNullOrWhiteSpace(userId)) {
                 throw new ArgumentNullException(nameof(userId), $"Parameter {nameof(userId)} cannot be null or empty during registration initiation process.");
             }
-            var challenge = CryptoRandom.CreateRandomKey(32); /* https://www.w3.org/TR/webauthn/#dom-publickeycredentialcreationoptions-challenge */
-            var userHandle = CryptoRandom.CreateRandomKey(64); /* https://www.w3.org/TR/webauthn/#dom-publickeycredentialuserentity-id - https://www.w3.org/TR/webauthn/#sctn-user-handle-privacy - https://www.w3.org/TR/webauthn/#user-handle */
+            /* https://www.w3.org/TR/webauthn/#dom-publickeycredentialcreationoptions-challenge */
+            var challenge = CryptoRandom.CreateRandomKey(32);
+            /* 
+             * https://www.w3.org/TR/webauthn/#dom-publickeycredentialuserentity-id 
+             * https://www.w3.org/TR/webauthn/#sctn-user-handle-privacy 
+             * https://www.w3.org/TR/webauthn/#user-handle 
+             */
+            var userHandle = CryptoRandom.CreateRandomKey(64);
             var relyingParty = _relyingPartyInfoResolver.Resolve();
-            var publicKeyCredentialCreationOptions = new PublicKeyCredentialCreationOptions(relyingParty, userHandle, challenge, userId);
-            return Task.FromResult(publicKeyCredentialCreationOptions);
+            var excludeCredentials = await _publicKeyCredentialsStore.GetUserCredentials(userId);
+            var publicKeyCredentialCreationOptions = new PublicKeyCredentialCreationOptionsBase64(relyingParty, userHandle, challenge, userId, deviceFriendlyName, excludeCredentials);
+            // We need to persist the challenge because we need to retrieve it when completing the registration.
+            await _registrationChallengeStore.Persist(Convert.ToBase64String(userHandle), publicKeyCredentialCreationOptions);
+            return publicKeyCredentialCreationOptions;
+        }
+
+        /// <inheritdoc />
+        public Task<FidoRegistrationResult> CompleteRegistration(PublicKeyCredential response) {
+            if (response == null) {
+                throw new ArgumentNullException(nameof(response), $"Parameter {nameof(response)} cannot be null during registration completion process.");
+            }
+            throw new NotImplementedException();
         }
     }
 }

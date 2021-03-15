@@ -141,9 +141,6 @@ namespace Indice.Identity.Security
                     "https://localhost:2000",
                     "https://idsrv-admin-ui.azurewebsites.net"
                 },
-                ClientSecrets = {
-                    new Secret("M2YwNTlkMTgtYWQzNy00MGNjLWFiYjQtZWQ3Y2Y4N2M3YWU3".ToSha256())
-                },
                 AllowedGrantTypes = GrantTypes.Code,
                 AllowedScopes = {
                     IdentityServerApi.Scope,

@@ -1,4 +1,4 @@
-@model FidoRegisterViewModel
+@model FidoRegisterModel
 
 <div class="login-page">
     <partial name="_ValidationSummary" />
@@ -11,11 +11,12 @@
                 <div class="card-body">
                     <form asp-controller="@AccountController.Name" asp-action="@nameof(AccountController.InitRegistration)">
                         <div class="form-group">
-                            <label asp-for="UserId"></label>
-                            <input type="text" class="form-control" placeholder="Username" asp-for="UserId" autofocus />
+                            <label asp-for="UserId">User Id (username)</label>
+                            <input type="text" class="form-control" placeholder="User Id" asp-for="UserId" autofocus />
+                            <span asp-validation-for="UserId" class="text-danger"></span>
                         </div>
                         <div class="form-group">
-                            <label asp-for="DeviceFriendlyName"></label>
+                            <label asp-for="DeviceFriendlyName">Device Friendly Name</label>
                             <input type="text" class="form-control" placeholder="Device Friendly Name" asp-for="DeviceFriendlyName" />
                         </div>
                         <button type="submit" class="btn btn-primary" name="button">Register</button>
