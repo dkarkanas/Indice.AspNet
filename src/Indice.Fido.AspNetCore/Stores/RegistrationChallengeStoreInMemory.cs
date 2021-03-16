@@ -9,12 +9,12 @@ namespace Indice.AspNetCore.Fido.Stores
     public class RegistrationChallengeStoreInMemory : IRegistrationChallengeStore
     {
         /// <inheritdoc />
-        public Task<PublicKeyCredentialCreationOptionsBase64> GetByKey(string key) {
+        public Task<PublicKeyCredentialCreationOptionsBase64> Get() {
             throw new System.NotImplementedException();
         }
 
         /// <inheritdoc />
-        public Task Persist(string key, PublicKeyCredentialCreationOptionsBase64 publicKeyCredentialCreationOptions) {
+        public Task Persist(PublicKeyCredentialCreationOptionsBase64 publicKeyCredentialCreationOptions) {
             throw new System.NotImplementedException();
         }
     }

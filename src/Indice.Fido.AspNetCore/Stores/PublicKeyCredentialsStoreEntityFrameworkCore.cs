@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Indice.AspNetCore.Fido.Models;
 using Indice.AspNetCore.Fido.Stores;
+using Microsoft.EntityFrameworkCore;
 
 namespace Indice.AspNetCore.Fido.EntityFrameworkCore
 {
@@ -18,13 +20,21 @@ namespace Indice.AspNetCore.Fido.EntityFrameworkCore
         }
 
         /// <inheritdoc />
-        public Task<FidoPublicKeyCredential> GetById(byte[] id) {
-            throw new NotImplementedException();
+        public async Task<FidoPublicKeyCredential> GetById(byte[] id) {
+            if (id == null) {
+                throw new ArgumentNullException(nameof(id), $"Public key credential id cannot be null.");
+            }
+            var key = await _dbContext.FidoPublicKeyCredentials.SingleOrDefaultAsync(x => x.Id == id);
+            return key?.ToModel();
         }
 
         /// <inheritdoc />
-        public Task<IEnumerable<byte[]>> GetUserCredentials(string userId) {
-            throw new NotImplementedException();
+        public async Task<IEnumerable<byte[]>> GetUserCredentials(string userId) {
+            if (string.IsNullOrWhiteSpace(userId)) {
+                throw new ArgumentNullException(nameof(userId), $"Parameter {nameof(userId)} cannot be null or empty.");
+            }
+            var existingCredentials = await _dbContext.FidoPublicKeyCredentials.Where(x => x.UserId == userId).Select(x => x.Id).ToListAsync();
+            return existingCredentials;
         }
     }
 }

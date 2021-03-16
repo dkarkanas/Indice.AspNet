@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
-using IdentityModel;
 using Indice.AspNetCore.Fido.Models;
 using Indice.AspNetCore.Fido.Stores;
 
@@ -11,6 +11,8 @@ namespace Indice.AspNetCore.Fido
     /// </summary>
     public class FidoAuthenticationService : IFidoAuthenticationService
     {
+        // https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.randomnumbergenerator
+        private static readonly RandomNumberGenerator RandomNumberGenerator = RandomNumberGenerator.Create();
         private readonly IPublicKeyCredentialsStore _publicKeyCredentialsStore;
         private readonly IRegistrationChallengeStore _registrationChallengeStore;
         private readonly IRelyingPartyResolver _relyingPartyInfoResolver;
@@ -37,18 +39,18 @@ namespace Indice.AspNetCore.Fido
                 throw new ArgumentNullException(nameof(userId), $"Parameter {nameof(userId)} cannot be null or empty during registration initiation process.");
             }
             /* https://www.w3.org/TR/webauthn/#dom-publickeycredentialcreationoptions-challenge */
-            var challenge = CryptoRandom.CreateRandomKey(32);
+            var challenge = GenerateRandomKey(32);
             /* 
              * https://www.w3.org/TR/webauthn/#dom-publickeycredentialuserentity-id 
              * https://www.w3.org/TR/webauthn/#sctn-user-handle-privacy 
              * https://www.w3.org/TR/webauthn/#user-handle 
              */
-            var userHandle = CryptoRandom.CreateRandomKey(64);
+            var userHandle = GenerateRandomKey(64);
             var relyingParty = _relyingPartyInfoResolver.Resolve();
             var excludeCredentials = await _publicKeyCredentialsStore.GetUserCredentials(userId);
             var publicKeyCredentialCreationOptions = new PublicKeyCredentialCreationOptionsBase64(relyingParty, userHandle, challenge, userId, deviceFriendlyName, excludeCredentials);
             // We need to persist the challenge because we need to retrieve it when completing the registration.
-            await _registrationChallengeStore.Persist(Convert.ToBase64String(userHandle), publicKeyCredentialCreationOptions);
+            await _registrationChallengeStore.Persist(publicKeyCredentialCreationOptions);
             return publicKeyCredentialCreationOptions;
         }
 
@@ -58,6 +60,16 @@ namespace Indice.AspNetCore.Fido
                 throw new ArgumentNullException(nameof(response), $"Parameter {nameof(response)} cannot be null during registration completion process.");
             }
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Creates a random key as a <see cref="byte[]"/>.
+        /// </summary>
+        /// <param name="length">The desired key length.</param>
+        public static byte[] GenerateRandomKey(int length) {
+            var bytes = new byte[length];
+            RandomNumberGenerator.GetBytes(bytes);
+            return bytes;
         }
     }
 }

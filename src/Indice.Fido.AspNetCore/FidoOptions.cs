@@ -20,7 +20,7 @@ namespace Indice.AspNetCore.Fido
         /// </example>
         public string RelyingPartyId {
             get => _relyingPartyId;
-            set => _relyingPartyId = Uri.IsWellFormedUriString(value, UriKind.Absolute) ? value : throw new ArgumentException("Relying Party Id must be a valid domain string.", nameof(RelyingPartyId));
+            set => _relyingPartyId = Uri.IsWellFormedUriString(value, UriKind.Relative) ? value : throw new ArgumentException("Relying Party Id must be a valid domain string.", nameof(RelyingPartyId));
         }
         /// <summary>
         /// The name of the Relying Party. If not set it defaults to 'Indice FIDO2 Server'.

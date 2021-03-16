@@ -8,18 +8,18 @@
         /// <summary>
         /// A globally unique identifier for this <see cref="FidoPublicKeyCredential"/>.
         /// </summary>
-        public byte[] Id { get; }
+        public byte[] Id { get; internal set; }
         /// <summary>
         /// A unique identifier for the user.
         /// </summary>
-        public string UserId { get; }
+        public string UserId { get; internal set; }
         /// <summary>
         /// A friendly name for the authenticator.
         /// </summary>
-        public string DeviceFriendlyName { get; }
+        public string DeviceFriendlyName { get; internal set; }
         /// <summary>
         /// Used to map a specific public key credential to a specific user account with the Relying Party.
         /// </summary>
-        public byte[] UserHandle { get; }
+        public byte[] UserHandle { get; internal set; }
     }
 }

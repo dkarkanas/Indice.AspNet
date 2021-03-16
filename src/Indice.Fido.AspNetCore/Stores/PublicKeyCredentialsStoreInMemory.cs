@@ -13,19 +13,21 @@ namespace Indice.AspNetCore.Fido.Stores
     /// </summary>
     public class PublicKeyCredentialsStoreInMemory : IPublicKeyCredentialsStore
     {
+        private static readonly IDictionary<string, IEnumerable<FidoPublicKeyCredential>> _keys;
+
         /// <summary>
         /// Creates a new instance of <see cref="PublicKeyCredentialsStoreInMemory"/>.
         /// </summary>
         /// <inheritdoc />
-        public PublicKeyCredentialsStoreInMemory() {
+        static PublicKeyCredentialsStoreInMemory() {
             /* https://docs.microsoft.com/en-us/dotnet/api/system.collections.concurrent.concurrentdictionary-2 */
-            Keys = new ConcurrentDictionary<string, IEnumerable<FidoPublicKeyCredential>>();
+            _keys = new ConcurrentDictionary<string, IEnumerable<FidoPublicKeyCredential>>();
         }
 
         /// <summary>
         /// Holds the keys that been created for all users.
         /// </summary>
-        public IDictionary<string, IEnumerable<FidoPublicKeyCredential>> Keys { get; }
+        public static IDictionary<string, IEnumerable<FidoPublicKeyCredential>> Keys => _keys;
 
         /// <inheritdoc />
         public Task<FidoPublicKeyCredential> GetById(byte[] id) {
@@ -33,7 +35,7 @@ namespace Indice.AspNetCore.Fido.Stores
                 throw new ArgumentNullException(nameof(id), $"Public key credential id cannot be null.");
             }
             /* https://docs.microsoft.com/en-us/dotnet/api/system.readonlyspan-1 */
-            var key = Keys.SelectMany(x => x.Value).SingleOrDefault(x => ((ReadOnlySpan<byte>)x.Id).SequenceEqual(id));
+            var key = _keys.SelectMany(x => x.Value).SingleOrDefault(x => ((ReadOnlySpan<byte>)x.Id).SequenceEqual(id));
             return Task.FromResult(key);
         }
 
@@ -42,10 +44,10 @@ namespace Indice.AspNetCore.Fido.Stores
             if (string.IsNullOrWhiteSpace(userId)) {
                 throw new ArgumentNullException(nameof(userId), $"Parameter {nameof(userId)} cannot be null or empty.");
             }
-            if (!Keys.ContainsKey(userId)) {
+            if (!_keys.ContainsKey(userId)) {
                 return Task.FromResult((IEnumerable<byte[]>)null);
             }
-            var existingCredentials = Keys[userId].Select(x => x.Id);
+            var existingCredentials = _keys[userId].Select(x => x.Id);
             return Task.FromResult(existingCredentials);
         }
     }

@@ -31,7 +31,7 @@ namespace Indice.AspNetCore.Fido
             string relyingPartyId;
             var relyingPartyName = _fidoOptions.RelyingPartyName;
             if (!string.IsNullOrWhiteSpace(_fidoOptions.RelyingPartyId)) {
-                relyingPartyId = new Uri(_fidoOptions.RelyingPartyId).Host;
+                relyingPartyId = _fidoOptions.RelyingPartyId;
             } else {
                 var host = _httpContext.Request.Host;
                 relyingPartyId = host.Host;

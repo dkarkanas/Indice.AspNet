@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Indice.AspNetCore.Fido.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Indice.AspNetCore.Fido.Stores
@@ -43,22 +43,20 @@ namespace Indice.AspNetCore.Fido.Stores
         }
 
         /// <inheritdoc />
-        public Task<PublicKeyCredentialCreationOptionsBase64> GetByKey(string key) {
+        public Task<PublicKeyCredentialCreationOptionsBase64> Get() {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public Task Persist(string key, PublicKeyCredentialCreationOptionsBase64 publicKeyCredentialCreationOptions) {
-            if (string.IsNullOrWhiteSpace(key)) {
-                throw new ArgumentNullException(nameof(key), $"Parameter {nameof(key)} cannot be null or empty.");
-            }
+        public Task Persist(PublicKeyCredentialCreationOptionsBase64 publicKeyCredentialCreationOptions) {
             if (publicKeyCredentialCreationOptions == null) {
                 throw new ArgumentNullException(nameof(publicKeyCredentialCreationOptions), $"Parameter {nameof(publicKeyCredentialCreationOptions)} cannot be null.");
             }
             var serializedCredential = JsonSerializer.Serialize(publicKeyCredentialCreationOptions);
             var protectedCredential = _dataProtector.Protect(serializedCredential);
-            var cookieOptions = (_fidoOptions.ChallengeCookie ?? DefaultCookieBuilder).Build(_httpContext);
-            _httpContext.Response.Cookies.Append(key, protectedCredential, cookieOptions);
+            var cookieBuilder = _fidoOptions.ChallengeCookie ?? DefaultCookieBuilder;
+            var cookieOptions = cookieBuilder.Build(_httpContext);
+            _httpContext.Response.Cookies.Append(WebUtility.UrlEncode(cookieBuilder.Name), protectedCredential, cookieOptions);
             return Task.CompletedTask;
         }
     }

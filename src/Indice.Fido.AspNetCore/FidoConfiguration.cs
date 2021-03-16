@@ -45,9 +45,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">Specifies the contract for a collection of service descriptors.</param>
         public static IFidoBuilder AddFido(this IServiceCollection services) {
             var fidoBuilder = services.AddFidoBuilder();
-            fidoBuilder.AddCoreServices()
-                       .AddRequiredPlatformServices()
-                       .UseInMemoryPublicKeyCredentialsStore();
+            fidoBuilder.AddCoreServices();
+            fidoBuilder.AddRequiredPlatformServices();
+            fidoBuilder.UseInMemoryPublicKeyCredentialsStore();
+            fidoBuilder.UseCookieRegistrationChallengeStore();
             return fidoBuilder;
         }
 
@@ -75,8 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Registers a service in order to persist public key credentials in-memory. It should be used for testing or development purposes and not recommended for production scenarios.
         /// </summary>
         /// <param name="fidoBuilder">A builder that helps register and configure FIDO2 services.</param>
-        public static IFidoBuilder UseInMemoryPublicKeyCredentialsStore(this IFidoBuilder fidoBuilder) => 
-            UsePublicKeyCredentialsStore<PublicKeyCredentialsStoreInMemory>(fidoBuilder);
+        public static IFidoBuilder UseInMemoryPublicKeyCredentialsStore(this IFidoBuilder fidoBuilder) => UsePublicKeyCredentialsStore<PublicKeyCredentialsStoreInMemory>(fidoBuilder);
 
         /// <summary>
         /// Registers a service in order to persist public key credentials a database using Entity Framework Core.
@@ -104,7 +104,29 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TStore">The CLR type of store to register as an implementation of <see cref="IPublicKeyCredentialsStore"/>.</typeparam>
         /// <param name="fidoBuilder">A builder that helps register and configure FIDO2 services.</param>
         public static IFidoBuilder UsePublicKeyCredentialsStore<TStore>(this IFidoBuilder fidoBuilder) where TStore : IPublicKeyCredentialsStore {
-            fidoBuilder.Services.TryAddSingleton(typeof(IPublicKeyCredentialsStore), typeof(TStore));
+            fidoBuilder.Services.AddTransient(typeof(IPublicKeyCredentialsStore), typeof(TStore));
+            return fidoBuilder;
+        }
+
+        /// <summary>
+        /// Registers a service in order to persist the generated challenge during registration initiation in-memory. It should be used for testing or development purposes and not recommended for production scenarios.
+        /// </summary>
+        /// <param name="fidoBuilder">A builder that helps register and configure FIDO2 services.</param>
+        public static IFidoBuilder UseInMemoryRegistrationChallengeStore(this IFidoBuilder fidoBuilder) => UseRegistrationChallengeStore<RegistrationChallengeStoreInMemory>(fidoBuilder);
+
+        /// <summary>
+        /// Registers a service in order to persist the generated challenge during registration initiation in a cookie.
+        /// </summary>
+        /// <param name="fidoBuilder">A builder that helps register and configure FIDO2 services.</param>
+        public static IFidoBuilder UseCookieRegistrationChallengeStore(this IFidoBuilder fidoBuilder) => UseRegistrationChallengeStore<RegistrationChallengeStoreCookie>(fidoBuilder);
+
+        /// <summary>
+        /// Registers a service in order to persist the generated challenge during registration initiation.
+        /// </summary>
+        /// <typeparam name="TStore">The CLR type of store to register as an implementation of <see cref="IRegistrationChallengeStore"/>.</typeparam>
+        /// <param name="fidoBuilder">A builder that helps register and configure FIDO2 services.</param>
+        public static IFidoBuilder UseRegistrationChallengeStore<TStore>(this IFidoBuilder fidoBuilder) where TStore : IRegistrationChallengeStore {
+            fidoBuilder.Services.AddTransient(typeof(IRegistrationChallengeStore), typeof(TStore));
             return fidoBuilder;
         }
     }

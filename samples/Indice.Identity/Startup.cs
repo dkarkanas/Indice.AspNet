@@ -96,10 +96,9 @@ namespace Indice.Identity
             });
             // Setup FIDO2.
             services.AddFido(options => {
-                options.RelyingPartyId = "www.indice.gr";
                 options.RelyingPartyName = "Indice FIDO2 Server";
             })
-            /*.UseEntityFrameworkCorePublicKeyCredentialsStore(builder => builder.UseSqlServer(Configuration.GetConnectionString("FidoDb")))*/;
+            .UseEntityFrameworkCorePublicKeyCredentialsStore(builder => builder.UseSqlServer(Configuration.GetConnectionString("FidoDb")));
             // Setup worker host for executing background tasks.
             services.AddWorkerHost(options => {
                 options.JsonOptions.JsonSerializerOptions.WriteIndented = true;
